@@ -45,7 +45,7 @@ branch = 'netbsd-8'
 disk_size = '24G'
 version = '8.1'
 pkg_path = f"http://cdn.NetBSD.org/pub/pkgsrc/packages/NetBSD/{arch}/{version}/All/"
-pkgs = "cmake swig3 curl python37 vim ccache ninja-build mozilla-rootcerts git py37-pip"
+pkgs = "cmake swig3 curl python37 python27 vim ccache ninja-build mozilla-rootcerts git py37-pip"
 workdir = f"work-{branch}-{arch}"
 
 if args.google_compute_engine:
@@ -63,11 +63,11 @@ a = anita.Anita(
     persist=True)
 
 
-def boot_and_run(commands):
+def boot_and_run(commands, timeout=1200):
   child = a.boot()
   anita.login(child)
   for cmd in commands:
-    rc = anita.shell_cmd(child, cmd, 1200)
+    rc = anita.shell_cmd(child, cmd, timeout)
     if rc != 0:
       raise Exception("command failed")
   anita.shell_cmd(child, "sync; shutdown -hp now", 1200)
@@ -99,7 +99,8 @@ boot_and_run(commands)
 boot_and_run([
     f'env PKG_PATH="{pkg_path}" pkg_add {pkgs}',
     "mozilla-rootcerts install",
-])
+    "git clone --bare https://github.com/llvm/llvm-project.git",
+], timeout=3600)
 
 gce_commands = [
     """cat > /etc/ifconfig.vioif0 << EOF
