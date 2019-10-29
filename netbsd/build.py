@@ -124,17 +124,18 @@ if args.google_compute_engine:
     check=True)
   print("tarball created:", tarball)
 
+else:
+  qcow = f'netbsd-{version}.qcow'
+  subprocess.run(['qemu-img', 'convert', '-f', 'raw', os.path.join(workdir, 'wd0.img'), '-O', 'qcow2', qcow],
+        check=True)
+
 print("DONE.")
 
 if not args.google_compute_engine:
   print()
   print(f"""
   To run the VM:
-  qemu-system-x86_64 -m 16384 -drive file={workdir}/wd0.img,format=raw,media=disk,snapshot=off -nographic -nic user,hostfwd=tcp::2222-:22
-
-  To convert the image:
-  qemu-img convert -f raw  {workdir}/wd0.img  -O qcow2 netbsd-8.1.qcow
-
+  qemu-system-x86_64 -m 16384 -drive file={qcow},media=disk,snapshot=off -nographic -nic user,hostfwd=tcp::2222-:22
   """)
 
 sys.exit(0)
