@@ -13,6 +13,7 @@ import pexpect.exceptions
 
 # this doesn't appear to be on pypi
 # https://github.com/gson1703/anita
+# pip3 install git+https://github.com/gson1703/anita.git
 import anita
 
 
