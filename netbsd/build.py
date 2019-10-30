@@ -7,6 +7,7 @@ import ftplib
 import os
 import sys
 import argparse
+from shlex import split
 
 import pexpect.exceptions
 
@@ -18,8 +19,15 @@ import anita
 parser = argparse.ArgumentParser()
 parser.add_argument("--key")
 parser.add_argument("--google-compute-engine", "--gce", action='store_true')
+parser.add_argument("--paramiko", help="generate a ssh key suitible for paramiko", action='store_true')
 args = parser.parse_args()
 
+if args.key and args.paramiko:
+  parser.error("can't use --key and --paramiko at the same time")
+
+if args.paramiko:
+  subprocess.run(split('ssh-keygen -N "" -t rsa -b 4096  -m PEM -f netbsd-key'), check=True)
+  args.key = 'netbsd-key.pub'
 
 def find_latest_release(branch, arch):
   """Find the latest NetBSD-current release for the given arch.
@@ -45,7 +53,7 @@ branch = 'netbsd-8'
 disk_size = '24G'
 version = '8.1'
 pkg_path = f"http://cdn.NetBSD.org/pub/pkgsrc/packages/NetBSD/{arch}/{version}/All/"
-pkgs = "cmake swig3 curl python37 python27 vim ccache ninja-build mozilla-rootcerts git py37-pip"
+pkgs = "cmake swig3 curl python37 python27 vim ccache ninja-build mozilla-rootcerts git py37-pip py27-pip"
 workdir = f"work-{branch}-{arch}"
 
 if args.google_compute_engine:
